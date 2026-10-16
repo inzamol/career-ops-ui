@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { RouteProgressHost } from "@/components/route-progress-host";
 import { ThemeProvider } from "@/components/theme-provider";
 import { readFollowupsEnabled } from "@/lib/followups-server";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -38,8 +39,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
       className={`${inter.variable} ${instrumentSerif.variable} ${instrumentSerifItalic.variable}`}
     >
-      <body className="font-sans antialiased">
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      <head>
+        <Script id="theme-script" strategy="beforeInteractive">
+          {THEME_SCRIPT}
+        </Script>
+      </head>
+      <body suppressHydrationWarning className="font-sans antialiased">
         <RouteProgressHost />
         <ThemeProvider>
           <AppShell followupsEnabled={followupsEnabled}>{children}</AppShell>
