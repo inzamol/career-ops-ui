@@ -621,3 +621,33 @@ export function readLanguageConfig(): LanguageConfig {
   const modesDir = modesDirs[0];
   return { output, modesDir, modesDirs, evalModeFile: resolveEvalModeFile(root, modesDir) };
 }
+
+/**
+ * Safely parse config/profile.yml to read candidate name and email.
+ * Uses js-yaml rather than unanchored regexes.
+ */
+export function readProfileCandidateInfo(rootPath?: string): { name: string; email: string } {
+  const root = rootPath || careerOpsRoot();
+  const profileFile = path.join(root, "config", "profile.yml");
+  let name = "Candidate";
+  let email = "applicant@example.com";
+  try {
+    if (fs.existsSync(profileFile)) {
+      const parsed = yaml.load(fs.readFileSync(profileFile, "utf8")) as any;
+      if (parsed && typeof parsed === "object") {
+        const candidate = parsed.candidate || parsed;
+        if (typeof candidate.full_name === "string" && candidate.full_name.trim()) {
+          name = candidate.full_name.trim();
+        } else if (typeof candidate.name === "string" && candidate.name.trim()) {
+          name = candidate.name.trim();
+        }
+        if (typeof candidate.email === "string" && candidate.email.trim()) {
+          email = candidate.email.trim();
+        }
+      }
+    }
+  } catch {
+    /* fallback to defaults */
+  }
+  return { name, email };
+}
